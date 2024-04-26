@@ -1,6 +1,6 @@
 "use client";
 
-import { TeamModal } from "@/components/TeamModal";
+import TeamDetailsPanel from "@/components/TeamDetailsPanel";
 import {
   Player,
   StaticDataResponse,
@@ -61,12 +61,21 @@ const LeagueDashboard: React.FC = () => {
     // Enrich picks with static data
     if (staticData) {
       const enrichedPicks = data.picks.map((pick) => {
+        console.log(pick);
         const playerDetails = staticData.elements.find(
           (player) => player.id === pick.element
         );
         return { ...pick, playerDetails };
       });
-      setTeamDetails(enrichedPicks.map((pick: any) => pick.playerDetails));
+      setTeamDetails(
+        enrichedPicks.map((pick: any) => {
+          return { ...pick };
+        })
+      );
+      console.log(
+        "TEAM DETAILS",
+        enrichedPicks.map((pick: any) => pick.playerDetails)
+      );
     }
     setSelectedTeam(teamId);
   };
@@ -111,9 +120,9 @@ const LeagueDashboard: React.FC = () => {
         </div>
       </div>
       {selectedTeam !== null && (
-        <TeamModal
+        <TeamDetailsPanel
           isOpen={!!selectedTeam}
-          onOpenChange={() => setSelectedTeam(null)}
+          onClose={() => setSelectedTeam(null)}
           teamDetails={teamDetails}
         />
       )}

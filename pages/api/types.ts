@@ -3,12 +3,27 @@ export interface PlayerPick {
   position: number;
   is_captain: boolean;
   is_vice_captain: boolean;
+  multiplier: number;
 }
 
 export interface UserTeamResponse {
   picks: PlayerPick[];
 }
 
+export interface PlayerDetails {
+  id: number;
+  name: string;
+  first_name: string;
+  second_name: string;
+  web_name: string;
+  team_code: number;
+  status: string;
+  now_cost: number;
+  photo: string; // This is actually a part string to build the image URL
+  element_type: number;
+  multiplier: number;
+  event_points: number;
+}
 export interface Player {
   id: number;
   name: string;
@@ -20,6 +35,8 @@ export interface Player {
   now_cost: number;
   photo: string; // This is actually a part string to build the image URL
   element_type: number;
+  multiplier: number;
+  playerDetails: PlayerDetails;
 }
 
 export interface StaticDataResponse {
