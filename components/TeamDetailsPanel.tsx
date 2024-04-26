@@ -1,57 +1,27 @@
-// TeamDetailsPanel.tsx
 import React from "react";
-import { Player } from "@/pages/api/types";
+import { EntryHistory, Player } from "@/pages/api/types";
 import { AnimatePresence, motion } from "framer-motion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFutbol,
+  faTimes,
+  faExchangeAlt,
+  faUser,
+  faRankingStar,
+} from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   teamDetails: Player[] | null;
-}
-
-interface FormationOffset {
-  start: number;
-  span: number;
-}
-
-function calculateOffsets(
-  playersByPosition: Record<number, Player[]>
-): Record<number, FormationOffset> {
-  const columnsAvailable = 12;
-  const formationOffsets: Record<number, FormationOffset> = {};
-  let maxSpan = 0;
-
-  // Calculate the span for each type and find the maximum span needed
-  [1, 2, 3, 4].forEach((type) => {
-    if (playersByPosition[type]) {
-      const count = playersByPosition[type].length;
-      const spanPerPlayer =
-        type === 1 ? 3 : Math.floor(columnsAvailable / count); // Customize per type if needed
-      formationOffsets[type] = {
-        span: spanPerPlayer,
-        start: 1, // Temporary start, will adjust later
-      };
-      maxSpan += spanPerPlayer * count;
-    }
-  });
-
-  // Adjust the start positions to center the entire formation
-  let currentPosition = Math.floor((columnsAvailable - maxSpan) / 2) + 1;
-  [1, 2, 3, 4].forEach((type) => {
-    if (formationOffsets[type]) {
-      formationOffsets[type].start = currentPosition;
-      currentPosition +=
-        formationOffsets[type].span * playersByPosition[type].length;
-    }
-  });
-
-  return formationOffsets;
+  userData: EntryHistory | null;
 }
 
 const TeamDetailsPanel: React.FC<Props> = ({
   isOpen,
   onClose,
   teamDetails,
+  userData,
 }) => {
   const playersByPosition: Record<number, Player[]> = {
     1: [],
@@ -76,22 +46,59 @@ const TeamDetailsPanel: React.FC<Props> = ({
 
   return (
     <AnimatePresence>
-      <div>
-        {isOpen && (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            variants={variants}
-            transition={{ type: "", stiffness: 300, damping: 30 }}
+      {isOpen && (
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={variants}
+          transition={{ type: "", stiffness: 300, damping: 30 }}
+          className="fixed inset-0 bg-white bg-cover bg-center shadow-lg z-50 overflow-y-auto p-4 grid grid-rows-4"
+        >
+          <div
             className="fixed inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/4/45/Football_field.svg')] bg-cover bg-center shadow-lg z-50 overflow-y-auto p-4 grid grid-rows-4"
+            style={{ height: "90vh" }}
           >
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-xl bg-white p-2 rounded-full"
             >
-              Close
+              <i className="fa fa-times" aria-hidden="true"></i>
             </button>
+            {/* Score display */}
+            <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow flex flex-col space-y-4">
+              <div className="flex items-center space-x-2">
+                <FontAwesomeIcon icon={faFutbol} className="text-xl" />
+                <span className="font-semibold">
+                  Total Score: {userData?.points}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <FontAwesomeIcon icon={faExchangeAlt} className="text-xl" />
+                <span className="font-semibold">
+                  Transfers: {userData?.event_transfers}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <FontAwesomeIcon icon={faFutbol} className="text-xl" />
+                <span className="font-semibold">
+                  Points on Bench: {userData?.points_on_bench}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <FontAwesomeIcon icon={faUser} className="text-xl" />
+                <span className="font-semibold">
+                  Overall Rank: {userData?.overall_rank}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <FontAwesomeIcon icon={faRankingStar} className="text-xl" />
+                <span className="font-semibold">
+                  Total Points: {userData?.total_points}
+                </span>
+              </div>
+            </div>
+
             {Object.keys(playersByPosition).map((key) => (
               <div
                 className="flex justify-center items-center space-x-2"
@@ -108,7 +115,7 @@ const TeamDetailsPanel: React.FC<Props> = ({
                         -4
                       )}.png`}
                       alt={player.playerDetails.web_name}
-                      className="w-20 h-24 mb-2 rounded-full"
+                      className="w-20 h-24 mb-2"
                     />
                     <p className="text-sm"></p>
                     <span className="text-xs">
@@ -118,9 +125,9 @@ const TeamDetailsPanel: React.FC<Props> = ({
                 ))}
               </div>
             ))}
-          </motion.div>
-        )}
-      </div>
+          </div>
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 };

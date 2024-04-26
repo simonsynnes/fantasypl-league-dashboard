@@ -2,6 +2,7 @@
 
 import TeamDetailsPanel from "@/components/TeamDetailsPanel";
 import {
+  EntryHistory,
   Player,
   StaticDataResponse,
   UserTeamResponse,
@@ -29,6 +30,7 @@ const LeagueDashboard: React.FC = () => {
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [teamDetails, setTeamDetails] = useState<Player[] | null>(null);
   const [staticData, setStaticData] = useState<StaticDataResponse | null>(null);
+  const [userData, setUserData] = useState<EntryHistory | null>(null);
 
   const fetchData = async () => {
     const response = await fetch("/api/league");
@@ -58,6 +60,8 @@ const LeagueDashboard: React.FC = () => {
   const fetchTeamData = async (teamId: number) => {
     const response = await fetch(`/api/team/${teamId}`);
     const data: UserTeamResponse = await response.json();
+    setUserData(data.entry_history);
+    console.log("data.entry_history", data.entry_history);
     // Enrich picks with static data
     if (staticData) {
       const enrichedPicks = data.picks.map((pick) => {
@@ -124,6 +128,7 @@ const LeagueDashboard: React.FC = () => {
           isOpen={!!selectedTeam}
           onClose={() => setSelectedTeam(null)}
           teamDetails={teamDetails}
+          userData={userData}
         />
       )}
     </div>

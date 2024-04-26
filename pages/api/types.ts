@@ -6,8 +6,17 @@ export interface PlayerPick {
   multiplier: number;
 }
 
+export interface EntryHistory {
+  event_transfers: number;
+  points: number;
+  points_on_bench: number;
+  overall_rank: number;
+  total_points: number;
+}
+
 export interface UserTeamResponse {
   picks: PlayerPick[];
+  entry_history: EntryHistory;
 }
 
 export interface PlayerDetails {
