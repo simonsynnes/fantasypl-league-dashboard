@@ -10,6 +10,20 @@ export default async function handler(
 ) {
   try {
     const players = await prisma.player.findMany({
+      where: {
+        OR: [
+          {
+            injuries: {
+              some: {}, // Checks if there is at least one entry in the injuries relation
+            },
+          },
+          {
+            priceChanges: {
+              some: {}, // Checks if there is at least one entry in the priceChanges relation
+            },
+          },
+        ],
+      },
       select: {
         id: true,
         webName: true,
@@ -31,12 +45,15 @@ export default async function handler(
     });
 
     const playersWithStatus = players.map((player) => {
-      const statusColor = player.injuries[0]?.severity; // Assuming severity is already stored as color code
+      const statusColor = determineColor(player.injuries[0]?.severity); // Determine color based on severity
       const costChangeEvent = player.priceChanges[0]?.priceChange || 0;
       return {
-        ...player,
+        id: player.id,
+        webName: player.webName,
+        nowCost: player.nowCost / 10, // Convert to more readable format
+        news: player.news,
         statusColor,
-        costChangeEvent,
+        costChangeEvent: costChangeEvent / 10, // Convert to more readable format
       };
     });
 
@@ -47,5 +64,18 @@ export default async function handler(
       message: "Failed to fetch player updates",
       error: error.message,
     });
+  }
+}
+
+function determineColor(severity: string | undefined): string {
+  switch (severity) {
+    case "red":
+      return "#C0020D";
+    case "orange":
+      return "#FFAB1B";
+    case "yellow":
+      return "#FFE65B";
+    default:
+      return "#CCCCCC"; // Default color for unknown or no injury
   }
 }
