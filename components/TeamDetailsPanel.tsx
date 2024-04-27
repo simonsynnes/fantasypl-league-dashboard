@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { EntryHistory, Player } from "@/pages/api/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,6 +23,26 @@ const TeamDetailsPanel: React.FC<Props> = ({
   teamDetails,
   userData,
 }) => {
+  const [userPoints, setUserPoints] = useState<number | undefined>(0);
+
+  useEffect(() => {
+    // Reset userPoints when userData changes
+    setUserPoints(userData?.points);
+
+    if (userData?.points === 0 && teamDetails) {
+      let tempTotalPoints = 0;
+      teamDetails.forEach((player) => {
+        if (
+          player.multiplier !== 0 &&
+          player.playerDetails.event_points !== 0
+        ) {
+          tempTotalPoints += player.playerDetails.event_points;
+        }
+      });
+      setUserPoints(tempTotalPoints); // Set the calculated points only when points are 0
+    }
+  }, [userData, teamDetails]); // Depend on userData and teamDetails to re-calculate when they change
+
   const playersByPosition: Record<number, Player[]> = {
     1: [],
     2: [],
@@ -32,7 +52,6 @@ const TeamDetailsPanel: React.FC<Props> = ({
 
   // Group players by their element type
   teamDetails?.forEach((player) => {
-    console.log(player);
     if (player.multiplier !== 0) {
       playersByPosition[player.playerDetails.element_type]?.push(player);
     }
@@ -66,9 +85,7 @@ const TeamDetailsPanel: React.FC<Props> = ({
             <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow flex flex-col space-y-4">
               <div className="flex items-center space-x-2">
                 <FontAwesomeIcon icon={faFutbol} className="text-xl" />
-                <span className="font-semibold">
-                  Total Score: {userData?.points}
-                </span>
+                <span className="font-semibold">Total Score: {userPoints}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <FontAwesomeIcon icon={faExchangeAlt} className="text-xl" />
@@ -99,7 +116,7 @@ const TeamDetailsPanel: React.FC<Props> = ({
             {Object.keys(playersByPosition).map((key) => (
               <div
                 className="flex justify-center items-center space-x-2"
-                key={key}
+                key={`position-${key}`}
               >
                 {playersByPosition[parseInt(key)].map((player) => (
                   <div

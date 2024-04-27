@@ -127,22 +127,22 @@ const LeagueDashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <SearchInput onSearch={setUserId} />
       <h1 className="text-3xl font-bold text-center text-dark-blue mb-10">
-        League Standings
+        Your leagues
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {leagueData.map((league: any, index: number) => (
           <div
             key={index}
-            className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg mb-4"
+            className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg mb-4 p-4"
           >
             {/* League Header */}
-            <div className="px-4 py-5 sm:px-6 bg-gradient-to-r from-light-blue to-dark-blue">
+            <div className="bg-gradient-to-r from-light-blue to-dark-blue text-white text-lg font-medium px-6 py-4 rounded-t-lg">
               <h3 className="text-lg leading-6 font-medium text-white">
                 {league.league.name}
               </h3>
             </div>
             {/* Teams */}
-            <div className="border-t border-dark-blue">
+            <div className="border-t border-dark-blue p-2">
               {league.standings.results
                 .slice(
                   (league.currentPage - 1) * league.itemsPerPage,
@@ -154,7 +154,11 @@ const LeagueDashboard: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="bg-off-white px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 hover:bg-light-blue cursor-pointer transition duration-150 ease-in-out"
+                    className={`bg-off-white px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 hover:bg-light-blue cursor-pointer transition duration-150 ease-in-out ${
+                      team.entry.toString() === userId
+                        ? "bg-blue-100 border-l-4 border-blue-500"
+                        : ""
+                    }`}
                     onClick={() => handleTeamClick(team.entry)}
                   >
                     <dt className="text-sm font-medium text-dark-gray">Team</dt>
@@ -186,6 +190,7 @@ const LeagueDashboard: React.FC = () => {
               <button
                 onClick={() => handlePageChange(index, league.currentPage - 1)}
                 disabled={league.currentPage === 1}
+                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
               >
                 Prev
               </button>

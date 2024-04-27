@@ -1,4 +1,3 @@
-// pages/api/leagues/[userId].js
 import { NextApiRequest, NextApiResponse } from "next";
 
 async function fetchLeagueData(leagueId: number) {
@@ -17,7 +16,10 @@ export default async function handler(
   try {
     const userResponse = await fetch(userLeaguesUrl);
     const userData = await userResponse.json();
-    const leagues = userData.leagues.classic;
+    // Filter leagues to include only those with "league_type" equal to "x"
+    const leagues = userData.leagues.classic.filter(
+      (league: any) => league.league_type === "x"
+    );
 
     const promises = leagues.map((league: any) => fetchLeagueData(league.id));
     const leagueDetails = await Promise.all(promises);
