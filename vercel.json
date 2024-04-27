@@ -2,8 +2,7 @@
   "crons": [
     {
       "path": "/api/dailyUpdate",
-      "schedule": "0 5 * * *",
-      "description": "Daily update of player data"
+      "schedule": "0 5 * * *"
     }
   ]
 }
