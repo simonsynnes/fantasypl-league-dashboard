@@ -45,6 +45,9 @@ export interface Player {
   photo: string; // This is actually a part string to build the image URL
   element_type: number;
   multiplier: number;
+  cost_change_start: number;
+  chance_of_playing_next_round: number;
+  cost_change_event: number;
   playerDetails: PlayerDetails;
 }
 

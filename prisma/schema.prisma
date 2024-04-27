@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Player {
+  id                      Int           @id @default(autoincrement())
+  externalId              Int           @unique // This matches the player ID from the Fantasy Premier League API
+  webName                 String
+  nowCost                 Float
+  costChangeStart         Float
+  chanceOfPlayingNextRound Int?
+  news                    String?
+  newsAdded               DateTime?
+  injuries                InjuryUpdate[]  // Relation to InjuryUpdate records
+  priceChanges            PriceChange[]  // Relation to PriceChange records
+}
+
+model InjuryUpdate {
+  id          Int     @id @default(autoincrement())
+  player      Player  @relation(fields: [playerId], references: [id])
+  playerId    Int
+  updateDate  DateTime
+  status      String
+  news        String?
+  severity    String   // "yellow", "orange", "red"
+}
+
+model PriceChange {
+  id          Int     @id @default(autoincrement())
+  player      Player  @relation(fields: [playerId], references: [id])
+  playerId    Int
+  changeDate  DateTime
+  priceChange Float
+}

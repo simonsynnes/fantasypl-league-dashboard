@@ -14,10 +14,12 @@ import {
   faArrowDown,
   faArrowLeft,
   faArrowRight,
+  faSync,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PlayerStatus from "@/components/PlayerStatus";
 
 interface Team {
   id: number;
@@ -141,6 +143,26 @@ const LeagueDashboard: React.FC = () => {
     });
   };
 
+  // Function to trigger the player data update
+  const updatePlayerData = async () => {
+    try {
+      const response = await fetch("/api/initialSetup", {
+        method: "POST", // Specify the method
+      });
+      const result = await response.json(); // Assuming the response is JSON
+      if (response.ok) {
+        console.log("Update successful:", result);
+        alert("Player data updated successfully!");
+      } else {
+        console.error("Failed to update player data:", result);
+        alert("Failed to update player data.");
+      }
+    } catch (error) {
+      console.error("Error updating player data:", error);
+      alert("Error updating player data.");
+    }
+  };
+
   if (!leagueData || leagueData.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen text-white bg-gray-800">
@@ -155,6 +177,14 @@ const LeagueDashboard: React.FC = () => {
       <h1 className="text-3xl font-bold text-center text-dark-blue mb-10">
         {managerName ? `${managerName}'s Leagues` : "Your Leagues"}
       </h1>
+      {/* <button
+        onClick={updatePlayerData}
+        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-150 ease-in-out"
+      >
+        <FontAwesomeIcon icon={faSync} className="mr-2" />
+        Update Player Data
+      </button> */}
+      <PlayerStatus />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {leagueData.map((league: any, index: number) => (
           <div
