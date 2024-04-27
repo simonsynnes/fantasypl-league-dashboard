@@ -29,9 +29,24 @@ interface LeagueData {
     results: Team[];
   };
 }
+interface PaginatedLeagueData extends LeagueData {
+  currentPage: number;
+  itemsPerPage: number;
+}
+
+const initialPaginatedLeagueData = (
+  data: LeagueData[]
+): PaginatedLeagueData[] =>
+  data.map((league) => ({
+    ...league,
+    currentPage: 1,
+    itemsPerPage: 10,
+  }));
 
 const LeagueDashboard: React.FC = () => {
-  const [leagueData, setLeagueData] = useState<LeagueData[] | null>(null);
+  const [leagueData, setLeagueData] = useState<PaginatedLeagueData[] | null>(
+    null
+  );
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [teamDetails, setTeamDetails] = useState<Player[] | null>(null);
   const [staticData, setStaticData] = useState<StaticDataResponse | null>(null);
@@ -41,11 +56,8 @@ const LeagueDashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(`/api/leagues/${userId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch league data");
-      }
-      const leagues = await response.json();
-      setLeagueData(leagues);
+      const data: LeagueData[] = await response.json();
+      setLeagueData(initialPaginatedLeagueData(data));
     };
 
     fetchData().catch(console.error);
@@ -91,6 +103,18 @@ const LeagueDashboard: React.FC = () => {
     setSelectedTeam(teamId);
   };
 
+  const handlePageChange = (leagueIndex: number, newPage: number) => {
+    setLeagueData((current) => {
+      if (current === null) {
+        return null; // Return null immediately if current state is null
+      }
+      // Map through current state to adjust only the targeted league's currentPage
+      return current.map((league, index) =>
+        index === leagueIndex ? { ...league, currentPage: newPage } : league
+      );
+    });
+  };
+
   if (!leagueData || leagueData.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen text-white bg-gray-800">
@@ -110,42 +134,68 @@ const LeagueDashboard: React.FC = () => {
           key={index}
           className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg mb-4"
         >
+          {/* League Header */}
           <div className="px-4 py-5 sm:px-6 bg-gradient-to-r from-light-blue to-dark-blue">
             <h3 className="text-lg leading-6 font-medium text-white">
               {league.league.name}
             </h3>
           </div>
+          {/* Teams */}
           <div className="border-t border-dark-blue">
-            {league.standings.results.map((team: any) => (
-              <motion.div
-                key={team.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="bg-off-white px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 hover:bg-light-blue cursor-pointer transition duration-150 ease-in-out"
-                onClick={() => handleTeamClick(team.entry)}
-              >
-                <dt className="text-sm font-medium text-dark-gray">Team</dt>
-                <dd className="text-sm text-dark-gray sm:col-span-2 flex items-center">
-                  {team.entry_name}
-                  {team.rank < team.last_rank ? (
-                    <FontAwesomeIcon
-                      icon={faArrowUp}
-                      className="ml-2 text-green-500"
-                    />
-                  ) : team.rank > team.last_rank ? (
-                    <FontAwesomeIcon
-                      icon={faArrowDown}
-                      className="ml-2 text-red-500"
-                    />
-                  ) : null}
-                </dd>
-                <dt className="text-sm font-medium text-dark-gray">Points</dt>
-                <dd className="text-sm text-dark-gray sm:col-span-2">
-                  {team.total}
-                </dd>
-              </motion.div>
-            ))}
+            {league.standings.results
+              .slice(
+                (league.currentPage - 1) * league.itemsPerPage,
+                league.currentPage * league.itemsPerPage
+              )
+              .map((team: any) => (
+                <motion.div
+                  key={team.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="bg-off-white px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 hover:bg-light-blue cursor-pointer transition duration-150 ease-in-out"
+                  onClick={() => handleTeamClick(team.entry)}
+                >
+                  <dt className="text-sm font-medium text-dark-gray">Team</dt>
+                  <dd className="text-sm text-dark-gray sm:col-span-2 flex items-center">
+                    {team.entry_name}
+                    {team.rank < team.last_rank ? (
+                      <FontAwesomeIcon
+                        icon={faArrowUp}
+                        className="ml-2 text-green-500"
+                      />
+                    ) : team.rank > team.last_rank ? (
+                      <FontAwesomeIcon
+                        icon={faArrowDown}
+                        className="ml-2 text-red-500"
+                      />
+                    ) : null}
+                  </dd>
+                  <dt className="text-sm font-medium text-dark-gray">Points</dt>
+                  <dd className="text-sm text-dark-gray sm:col-span-2">
+                    {team.total}
+                  </dd>
+                </motion.div>
+              ))}
+          </div>
+          {/* Pagination */}
+          <div className="flex justify-between p-4">
+            <button
+              onClick={() => handlePageChange(index, league.currentPage - 1)}
+              disabled={league.currentPage === 1}
+            >
+              Prev
+            </button>
+            <button
+              onClick={() => handlePageChange(index, league.currentPage + 1)}
+              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
+              disabled={
+                league.currentPage * league.itemsPerPage >=
+                league.standings.results.length
+              }
+            >
+              Next
+            </button>
           </div>
         </div>
       ))}
