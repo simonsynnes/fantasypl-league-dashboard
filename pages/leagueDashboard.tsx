@@ -1,6 +1,7 @@
 "use client";
 
 import TeamDetailsPanel from "@/components/TeamDetailsPanel";
+import SearchInput from "@/components/SearchInput";
 import {
   EntryHistory,
   Player,
@@ -30,23 +31,25 @@ interface LeagueData {
 }
 
 const LeagueDashboard: React.FC = () => {
-  const [leagueData, setLeagueData] = useState<LeagueData | null>(null);
+  const [leagueData, setLeagueData] = useState<LeagueData[] | null>(null);
   const [selectedTeam, setSelectedTeam] = useState<number | null>(null);
   const [teamDetails, setTeamDetails] = useState<Player[] | null>(null);
   const [staticData, setStaticData] = useState<StaticDataResponse | null>(null);
   const [userData, setUserData] = useState<EntryHistory | null>(null);
-
-  const fetchData = async () => {
-    const response = await fetch("/api/league");
-    const data = (await response.json()) as LeagueData;
-    setLeagueData(data);
-  };
+  const [userId, setUserId] = useState<string>("581576");
 
   useEffect(() => {
-    fetchData();
-    const intervalId = setInterval(fetchData, 60000); // Refresh data every minute
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
-  }, []);
+    const fetchData = async () => {
+      const response = await fetch(`/api/leagues/${userId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch league data");
+      }
+      const leagues = await response.json();
+      setLeagueData(leagues);
+    };
+
+    fetchData().catch(console.error);
+  }, [userId]);
 
   // Fetch static data once on component mount
   useEffect(() => {
@@ -88,27 +91,32 @@ const LeagueDashboard: React.FC = () => {
     setSelectedTeam(teamId);
   };
 
-  if (!leagueData)
+  if (!leagueData || leagueData.length === 0) {
     return (
-      <div className="flex justify-center items-center h-screen text-fpl-white bg-fpl-dark-purple">
-        <p>Loading...</p>
+      <div className="flex justify-center items-center h-screen text-white bg-gray-800">
+        Loading or no data available...
       </div>
     );
+  }
 
   return (
-    <div className="min-h-screen bg-light-gray py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-center text-dark-blue mb-10">
-          League Standings
-        </h1>
-        <div className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SearchInput onSearch={setUserId} />
+      <h1 className="text-3xl font-bold text-center text-dark-blue mb-10">
+        League Standings
+      </h1>
+      {leagueData.map((league: any, index: number) => (
+        <div
+          key={index}
+          className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg mb-4"
+        >
           <div className="px-4 py-5 sm:px-6 bg-gradient-to-r from-light-blue to-dark-blue">
             <h3 className="text-lg leading-6 font-medium text-white">
-              Standings
+              {league.league.name}
             </h3>
           </div>
           <div className="border-t border-dark-blue">
-            {leagueData.standings.results.map((team) => (
+            {league.standings.results.map((team: any) => (
               <motion.div
                 key={team.id}
                 initial={{ opacity: 0 }}
@@ -140,7 +148,8 @@ const LeagueDashboard: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
+      ))}
+
       {selectedTeam !== null && (
         <TeamDetailsPanel
           isOpen={!!selectedTeam}
