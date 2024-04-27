@@ -20,6 +20,13 @@ const config = {
     },
     extend: {
       colors: {
+        "dark-blue": "#14213d",
+        "dark-gray": "#333333",
+        "light-gray": "#f5f5f5",
+        "light-blue": "#0077b6",
+        "off-white": "#f8f9fa",
+        "accent-red": "#fca311",
+
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -58,6 +65,9 @@ const config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

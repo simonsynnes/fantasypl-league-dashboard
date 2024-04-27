@@ -55,10 +55,7 @@ const TeamDetailsPanel: React.FC<Props> = ({
           transition={{ type: "", stiffness: 300, damping: 30 }}
           className="fixed inset-0 bg-white bg-cover bg-center shadow-lg z-50 overflow-y-auto p-4 grid grid-rows-4"
         >
-          <div
-            className="fixed inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/4/45/Football_field.svg')] bg-cover bg-center shadow-lg z-50 overflow-y-auto p-4 grid grid-rows-4"
-            style={{ height: "90vh" }}
-          >
+          <div className="fixed inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/4/45/Football_field.svg')] bg-cover bg-center shadow-lg z-50 overflow-y-auto p-4 grid grid-rows-4">
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-xl bg-white p-2 rounded-full"

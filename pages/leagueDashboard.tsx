@@ -8,13 +8,17 @@ import {
   UserTeamResponse,
   fetchStaticData,
 } from "@/pages/api/types";
+import { faArrowUp, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 interface Team {
   id: number;
   entry: number;
   entry_name: string;
   rank: number;
+  last_rank: number;
   player_name: string;
   total: number;
 }
@@ -92,33 +96,47 @@ const LeagueDashboard: React.FC = () => {
     );
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
+    <div className="min-h-screen bg-light-gray py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-center text-purple-800 mb-10">
+        <h1 className="text-3xl font-bold text-center text-dark-blue mb-10">
           League Standings
         </h1>
-        <div className="bg-white shadow-xl overflow-hidden sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6 bg-gradient-to-r from-purple-600 to-purple-800">
+        <div className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6 bg-gradient-to-r from-light-blue to-dark-blue">
             <h3 className="text-lg leading-6 font-medium text-white">
               Standings
             </h3>
           </div>
-          <div className="border-t border-purple-900">
-            {leagueData?.standings.results.map((team) => (
-              <div
+          <div className="border-t border-dark-blue">
+            {leagueData.standings.results.map((team) => (
+              <motion.div
                 key={team.id}
-                className="bg-white px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 hover:bg-purple-50 cursor-pointer transition duration-150 ease-in-out"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-off-white px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 hover:bg-light-blue cursor-pointer transition duration-150 ease-in-out"
                 onClick={() => handleTeamClick(team.entry)}
               >
-                <dt className="text-sm font-medium text-purple-900">Team</dt>
-                <dd className="mt-1 text-sm text-purple-900 sm:mt-0 sm:col-span-2">
+                <dt className="text-sm font-medium text-dark-gray">Team</dt>
+                <dd className="text-sm text-dark-gray sm:col-span-2 flex items-center">
                   {team.entry_name}
+                  {team.rank < team.last_rank ? (
+                    <FontAwesomeIcon
+                      icon={faArrowUp}
+                      className="ml-2 text-green-500"
+                    />
+                  ) : team.rank > team.last_rank ? (
+                    <FontAwesomeIcon
+                      icon={faArrowDown}
+                      className="ml-2 text-red-500"
+                    />
+                  ) : null}
                 </dd>
-                <dt className="text-sm font-medium text-purple-900">Points</dt>
-                <dd className="mt-1 text-sm text-purple-900 sm:mt-0 sm:col-span-2">
+                <dt className="text-sm font-medium text-dark-gray">Points</dt>
+                <dd className="text-sm text-dark-gray sm:col-span-2">
                   {team.total}
                 </dd>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

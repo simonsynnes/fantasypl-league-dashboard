@@ -5,7 +5,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const teamId = req.query.id as string;
-  const currentGameWeek = "34"; // Replace this with dynamic game week logic if necessary
+  const currentGameWeek = "35"; // Replace this with dynamic game week logic if necessary
 
   const url = `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGameWeek}/picks/`;
 
