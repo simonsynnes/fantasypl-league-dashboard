@@ -1,4 +1,3 @@
-// pages/api/updatePlayers.ts
 import { PrismaClient } from "@prisma/client";
 import fetch from "node-fetch";
 
@@ -9,6 +8,13 @@ async function fetchFPLData(): Promise<any> {
   const response = await fetch(url);
   if (!response.ok) throw new Error("Failed to fetch FPL data");
   return response.json();
+}
+
+function determineSeverity(chance: number | null): string {
+  if (chance === null) return "unknown";
+  if (chance === 0) return "red";
+  if (chance <= 50) return "orange";
+  return "yellow";
 }
 
 export async function updatePlayers() {
@@ -31,7 +37,34 @@ export async function updatePlayers() {
             : null,
         },
       });
+
+      // Log price change if there is any
+      if (existingPlayer.nowCost !== playerData.now_cost / 10) {
+        await prisma.priceChange.create({
+          data: {
+            playerId: existingPlayer.id,
+            changeDate: new Date(),
+            priceChange: playerData.now_cost / 10 - existingPlayer.nowCost,
+          },
+        });
+      }
+
+      // Log injury update if there is any change
+      if (existingPlayer.news !== playerData.news) {
+        await prisma.injuryUpdate.create({
+          data: {
+            playerId: existingPlayer.id,
+            updateDate: new Date(),
+            status: playerData.news,
+            news: playerData.news,
+            severity: determineSeverity(
+              playerData.chance_of_playing_next_round
+            ),
+          },
+        });
+      }
     } else {
+      // Create new player
       await prisma.player.create({
         data: {
           externalId: playerData.id,
