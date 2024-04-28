@@ -19,53 +19,53 @@ function determineSeverity(chance: number | null): string {
 
 export async function updatePlayers() {
   const data = await fetchFPLData();
-  for (const playerData of data.elements) {
+  const playerUpdates = data.elements.map(async (playerData: any) => {
     const existingPlayer = await prisma.player.findUnique({
       where: { externalId: playerData.id },
     });
 
     if (existingPlayer) {
-      await prisma.player.update({
+      const newData = {
+        webName: playerData.web_name,
+        nowCost: playerData.now_cost / 10,
+        chanceOfPlayingNextRound: playerData.chance_of_playing_next_round,
+        news: playerData.news,
+        newsAdded: playerData.news_added
+          ? new Date(playerData.news_added)
+          : null,
+      };
+
+      const updatedPlayer = await prisma.player.update({
         where: { externalId: playerData.id },
-        data: {
-          webName: playerData.web_name,
-          nowCost: playerData.now_cost / 10,
-          chanceOfPlayingNextRound: playerData.chance_of_playing_next_round,
-          news: playerData.news,
-          newsAdded: playerData.news_added
-            ? new Date(playerData.news_added)
-            : null,
-        },
+        data: newData,
       });
 
-      // Log price change if there is any
-      if (existingPlayer.nowCost !== playerData.now_cost / 10) {
+      // Check and log price change if there is any
+      if (existingPlayer.nowCost !== newData.nowCost) {
         await prisma.priceChange.create({
           data: {
-            playerId: existingPlayer.id,
+            playerId: updatedPlayer.id,
             changeDate: new Date(),
-            priceChange: playerData.now_cost / 10 - existingPlayer.nowCost,
+            priceChange: newData.nowCost - existingPlayer.nowCost,
           },
         });
       }
 
-      // Log injury update if there is any change
-      if (existingPlayer.news !== playerData.news) {
+      // Check and log injury update if there is any change
+      if (existingPlayer.news !== newData.news) {
         await prisma.injuryUpdate.create({
           data: {
-            playerId: existingPlayer.id,
+            playerId: updatedPlayer.id,
             updateDate: new Date(),
-            status: playerData.news,
-            news: playerData.news,
-            severity: determineSeverity(
-              playerData.chance_of_playing_next_round
-            ),
+            status: newData.news,
+            news: newData.news,
+            severity: determineSeverity(newData.chanceOfPlayingNextRound),
           },
         });
       }
     } else {
       // Create new player
-      await prisma.player.create({
+      const newPlayer = await prisma.player.create({
         data: {
           externalId: playerData.id,
           webName: playerData.web_name,
@@ -78,24 +78,20 @@ export async function updatePlayers() {
             : null,
         },
       });
-    }
-  }
-  console.log("All players have been updated or created.");
-}
 
-export default async function handler(req: any, res: any) {
-  if (req.method === "POST") {
-    try {
-      await updatePlayers();
-      res.status(200).json({ message: "Update completed successfully." });
-    } catch (error: any) {
-      console.error("Failed to update players:", error);
-      res
-        .status(500)
-        .json({ message: "Failed to update players", error: error.message });
+      // Initialize price and injury logs for new players if necessary
+      if (newPlayer.costChangeStart !== 0) {
+        await prisma.priceChange.create({
+          data: {
+            playerId: newPlayer.id,
+            changeDate: new Date(),
+            priceChange: newPlayer.costChangeStart,
+          },
+        });
+      }
     }
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).json({ message: `Method ${req.method} Not Allowed` });
-  }
+  });
+
+  await Promise.allSettled(playerUpdates);
+  console.log("All players have been updated or created.");
 }
