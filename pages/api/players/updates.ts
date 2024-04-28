@@ -1,4 +1,3 @@
-// pages/api/players/updates.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { PrismaClient } from "@prisma/client";
 
@@ -47,13 +46,18 @@ export default async function handler(
     const playersWithStatus = players.map((player) => {
       const statusColor = determineColor(player.injuries[0]?.severity); // Determine color based on severity
       const costChangeEvent = player.priceChanges[0]?.priceChange || 0;
+      const updateDate =
+        player.priceChanges[0]?.changeDate.toISOString().slice(0, 10) ||
+        player.injuries[0]?.updateDate.toISOString().slice(0, 10) ||
+        "unknown";
       return {
         id: player.id,
         webName: player.webName,
-        nowCost: player.nowCost / 10, // Convert to more readable format
+        nowCost: player.nowCost / 10,
         news: player.news,
         statusColor,
-        costChangeEvent: costChangeEvent, // Convert to more readable format
+        costChangeEvent,
+        updateDate, // Added to use for grouping
       };
     });
 
