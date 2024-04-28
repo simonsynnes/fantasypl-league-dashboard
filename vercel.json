@@ -2,12 +2,16 @@
   "crons": [
     {
       "path": "/api/dailyUpdate",
-      "schedule": "0 5 * * *",
-      "maxDuration": 50
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/cleanupData",
       "schedule": "0 0 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/*.ts": {
+      "maxDuration": 50
+    }
+  }
 }
