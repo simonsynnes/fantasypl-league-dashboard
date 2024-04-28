@@ -26,8 +26,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
       <p>Current Price: £{(player.nowCost * 10).toFixed(1)}</p>
       <p>
         Price Change: £{player.costChangeEvent.toFixed(1)}{" "}
-        {isRiser && <span style={{ color: "green" }}>↑</span>}
-        {isFaller && <span style={{ color: "red" }}>↓</span>}
+        {isRiser && <span className="text-green-500">↑</span>}
+        {isFaller && <span className="text-red-500">↓</span>}
       </p>
       <p style={{ color: player.statusColor }}>
         Status: {player.news || "No recent updates"}

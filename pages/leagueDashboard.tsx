@@ -225,12 +225,13 @@ const LeagueDashboard: React.FC = () => {
                       {team.rank < team.last_rank ? (
                         <FontAwesomeIcon
                           icon={faArrowUp}
-                          className="ml-2 group-hover:text-white"
+                          className="ml-2 text-green-500"
                         />
                       ) : team.rank > team.last_rank ? (
                         <FontAwesomeIcon
                           icon={faArrowDown}
-                          className="ml-2 group-hover:text-white"
+                          className="ml-2
+                          text-red-500"
                         />
                       ) : null}
                     </dd>
