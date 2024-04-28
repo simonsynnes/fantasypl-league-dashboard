@@ -4,7 +4,7 @@ import fetch from "node-fetch";
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DATABASE_URL + "?connection_limit=10", // Increase the limit as necessary
+      url: process.env.POSTGRES_PRISMA_URL + "?connection_limit=10", // Increase the limit as necessary
     },
   },
 });
