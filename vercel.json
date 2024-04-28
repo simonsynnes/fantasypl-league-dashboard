@@ -3,6 +3,10 @@
     {
       "path": "/api/dailyUpdate",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cleanupData",
+      "schedule": "0 0 * * *"
     }
   ]
 }
