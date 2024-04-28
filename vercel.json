@@ -11,7 +11,7 @@
   ],
   "functions": {
     "pages/api/*.ts": {
-      "maxDuration": 50
+      "maxDuration": 100
     }
   }
 }
