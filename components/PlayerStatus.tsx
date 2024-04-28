@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PlayerCard from "./PlayerCard"; // Make sure the PlayerCard is either in this file or imported correctly
 
 interface Player {
   id: number;
@@ -6,7 +7,7 @@ interface Player {
   nowCost: number;
   costChangeEvent: number;
   news: string;
-  statusColor: string; // Dynamic color based on player status severity
+  statusColor: string;
 }
 
 const PlayerStatus: React.FC = () => {
@@ -41,21 +42,22 @@ const PlayerStatus: React.FC = () => {
     );
   }
 
+  const risers = players.filter((player) => player.costChangeEvent > 0);
+  const fallers = players.filter((player) => player.costChangeEvent < 0);
+  const injured = players.filter((player) => player.news);
+
   return (
     <div className="my-4 p-4 bg-white shadow rounded-lg">
       <h2 className="text-lg font-bold mb-2">Recent Player Updates</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {players.map((player) => (
-          <div
-            key={player.id}
-            className="p-2 border rounded hover:bg-gray-100"
-            style={{ borderColor: player.statusColor }}
-          >
-            <h3 className="font-semibold">{player.webName}</h3>
-            <p>Current Price: £{(player.nowCost * 10).toFixed(1)}</p>
-            <p>Price Change This Event: £{player.costChangeEvent}</p>
-            <p>Status: {player.news || "No recent updates"}</p>
-          </div>
+        {risers.map((player) => (
+          <PlayerCard player={player} key={player.id} />
+        ))}
+        {fallers.map((player) => (
+          <PlayerCard player={player} key={player.id} />
+        ))}
+        {injured.map((player) => (
+          <PlayerCard player={player} key={player.id} />
         ))}
       </div>
     </div>
