@@ -53,7 +53,7 @@ export default async function handler(
         nowCost: player.nowCost / 10, // Convert to more readable format
         news: player.news,
         statusColor,
-        costChangeEvent: costChangeEvent / 10, // Convert to more readable format
+        costChangeEvent: costChangeEvent, // Convert to more readable format
       };
     });
 

@@ -40,18 +40,17 @@ export async function updatePlayers() {
         data: newData,
       });
 
-      // Check and log price change if there is any
-      if (existingPlayer.nowCost !== newData.nowCost) {
+      // Log price change using cost_change_event
+      if (playerData.cost_change_event !== 0) {
         await prisma.priceChange.create({
           data: {
             playerId: updatedPlayer.id,
             changeDate: new Date(),
-            priceChange: newData.nowCost - existingPlayer.nowCost,
+            priceChange: playerData.cost_change_event * 0.1, // Convert event to actual price change
           },
         });
       }
 
-      // Check and log injury update if there is any change
       if (existingPlayer.news !== newData.news) {
         await prisma.injuryUpdate.create({
           data: {
@@ -59,7 +58,9 @@ export async function updatePlayers() {
             updateDate: new Date(),
             status: newData.news,
             news: newData.news,
-            severity: determineSeverity(newData.chanceOfPlayingNextRound),
+            severity: determineSeverity(
+              playerData.chance_of_playing_next_round
+            ),
           },
         });
       }
@@ -79,7 +80,6 @@ export async function updatePlayers() {
         },
       });
 
-      // Initialize price and injury logs for new players if necessary
       if (newPlayer.costChangeStart !== 0) {
         await prisma.priceChange.create({
           data: {

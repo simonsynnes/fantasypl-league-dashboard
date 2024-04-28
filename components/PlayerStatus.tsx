@@ -49,14 +49,11 @@ const PlayerStatus: React.FC = () => {
           <div
             key={player.id}
             className="p-2 border rounded hover:bg-gray-100"
-            style={{
-              borderColor: player.statusColor,
-              color: player.statusColor,
-            }}
+            style={{ borderColor: player.statusColor }}
           >
             <h3 className="font-semibold">{player.webName}</h3>
-            <p>Current Price: £{(player.nowCost / 10).toFixed(1)}</p>
-            <p>Price Change This event: £{player.costChangeEvent.toFixed(1)}</p>
+            <p>Current Price: £{(player.nowCost * 10).toFixed(1)}</p>
+            <p>Price Change This Event: £{player.costChangeEvent}</p>
             <p>Status: {player.news || "No recent updates"}</p>
           </div>
         ))}
