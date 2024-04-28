@@ -12,15 +12,9 @@ async function fetchFPLData(): Promise<any> {
 
 export async function updatePlayers() {
   const data = await fetchFPLData();
-  for (const playerData of data.elements) {
+  const updates = data.elements.map(async (playerData: any) => {
     const existingPlayer = await prisma.player.findUnique({
       where: { externalId: playerData.id },
-      include: {
-        priceChanges: {
-          take: 1,
-          orderBy: { changeDate: "desc" },
-        },
-      },
     });
 
     const newNowCost = playerData.now_cost / 10;
@@ -42,22 +36,26 @@ export async function updatePlayers() {
         },
       });
 
-      // Check and log price change if there is any and not duplicated
-      if (
-        priceDifference !== 0 &&
-        (!existingPlayer.priceChanges.length ||
-          existingPlayer.priceChanges[0].priceChange !== priceDifference)
-      ) {
-        await prisma.priceChange.create({
-          data: {
-            playerId: existingPlayer.id,
-            changeDate: new Date(),
-            priceChange: priceDifference,
-          },
+      if (priceDifference !== 0) {
+        const latestPriceChange = await prisma.priceChange.findFirst({
+          where: { playerId: existingPlayer.id },
+          orderBy: { changeDate: "desc" },
         });
+
+        if (
+          !latestPriceChange ||
+          latestPriceChange.priceChange !== priceDifference
+        ) {
+          await prisma.priceChange.create({
+            data: {
+              playerId: existingPlayer.id,
+              changeDate: new Date(),
+              priceChange: priceDifference,
+            },
+          });
+        }
       }
     } else {
-      // Create new player
       const newPlayer = await prisma.player.create({
         data: {
           externalId: playerData.id,
@@ -82,6 +80,8 @@ export async function updatePlayers() {
         });
       }
     }
-  }
+  });
+
+  await Promise.all(updates);
   console.log("All players have been updated or created.");
 }
