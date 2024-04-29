@@ -114,6 +114,8 @@ const Section: React.FC<{ title: string; players: Player[] }> = ({
               {player.webName}
               {player.costChangeEvent > 0 ? (
                 <span className="text-green-500 mx-1">↑</span>
+              ) : player.costChangeEvent == 0 ? (
+                <span></span>
               ) : (
                 <span className="text-red-500 mx-1">↓</span>
               )}

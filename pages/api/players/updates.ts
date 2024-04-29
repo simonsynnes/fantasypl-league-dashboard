@@ -10,18 +10,7 @@ export default async function handler(
   try {
     const players = await prisma.player.findMany({
       where: {
-        OR: [
-          {
-            injuries: {
-              some: {}, // Checks if there is at least one entry in the injuries relation
-            },
-          },
-          {
-            priceChanges: {
-              some: {}, // Checks if there is at least one entry in the priceChanges relation
-            },
-          },
-        ],
+        OR: [{ injuries: { some: {} } }, { priceChanges: { some: {} } }],
       },
       select: {
         id: true,
@@ -29,27 +18,25 @@ export default async function handler(
         nowCost: true,
         news: true,
         injuries: {
-          orderBy: {
-            updateDate: "desc",
-          },
+          orderBy: { updateDate: "desc" },
           take: 1,
         },
         priceChanges: {
-          orderBy: {
-            changeDate: "desc",
-          },
+          orderBy: { changeDate: "desc" },
           take: 1,
         },
       },
     });
 
     const playersWithStatus = players.map((player) => {
-      const statusColor = determineColor(player.injuries[0]?.severity); // Determine color based on severity
+      const statusColor = determineColor(player.injuries[0]?.severity);
       const costChangeEvent = player.priceChanges[0]?.priceChange || 0;
-      const updateDate =
-        player.priceChanges[0]?.changeDate.toISOString().slice(0, 10) ||
-        player.injuries[0]?.updateDate.toISOString().slice(0, 10) ||
-        "unknown";
+      // Ensure the date is formatted as UTC
+      const updateDate = formatUTCDate(
+        player.priceChanges[0]?.changeDate ||
+          player.injuries[0]?.updateDate ||
+          new Date()
+      );
       return {
         id: player.id,
         webName: player.webName,
@@ -57,7 +44,7 @@ export default async function handler(
         news: player.news,
         statusColor,
         costChangeEvent,
-        updateDate, // Added to use for grouping
+        updateDate, // Formatted UTC date
       };
     });
 
@@ -69,6 +56,13 @@ export default async function handler(
       error: error.message,
     });
   }
+}
+
+function formatUTCDate(date: Date): string {
+  const d = new Date(date);
+  return new Date(d.getTime() + d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10); // format to 'YYYY-MM-DD'
 }
 
 function determineColor(severity: string | undefined): string {
