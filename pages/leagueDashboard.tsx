@@ -187,15 +187,15 @@ const LeagueDashboard: React.FC = () => {
       </button> */}
       {/* <TestButton /> */}
       <PlayerStatus />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {leagueData.map((league: any, index: number) => (
           <div
             key={index}
             className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg mb-4 p-4"
           >
             {/* League Header */}
-            <div className="bg-gradient-to-r from-light-blue to-dark-blue text-white text-lg font-medium px-6 py-4 rounded-t-lg">
-              <h3 className="text-lg leading-6 font-medium text-white">
+            <div className="bg-gradient-to-r from-light-blue to-dark-blue text-white text-md font-bold px-6 py-3 rounded-t-lg">
+              <h3 className="text-lg leading-6 font-medium">
                 {league.league.name}
               </h3>
             </div>
@@ -245,7 +245,7 @@ const LeagueDashboard: React.FC = () => {
               <button
                 onClick={() => handlePageChange(index, league.currentPage - 1)}
                 disabled={league.currentPage === 1}
-                className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform transition duration-150 ease-in-out hover:scale-105"
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transform transition duration-150 ease-in-out active:scale-95 disabled:opacity-50"
               >
                 <FontAwesomeIcon icon={faArrowLeft} className="mr-2" /> Prev
               </button>

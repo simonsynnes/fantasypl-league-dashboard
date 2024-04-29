@@ -106,18 +106,16 @@ const Section: React.FC<{ title: string; players: Player[] }> = ({
         {players.map((player, index) => (
           <div
             key={player.id}
-            className={`bg-white p-4 mb-2 rounded-lg shadow ${
-              index >= 5 ? "mt-4" : ""
-            }`}
+            className="bg-white p-4 mb-2 rounded-lg shadow-lg transition duration-300 ease-in-out hover:shadow-xl"
           >
-            <h5 className="font-semibold">
+            <h5 className="text-lg font-semibold text-gray-800">
               {player.webName}
               {player.costChangeEvent > 0 ? (
-                <span className="text-green-500 mx-1">↑</span>
-              ) : player.costChangeEvent == 0 ? (
-                <span></span>
+                <span className="text-green-500 ml-2">↑</span>
+              ) : player.costChangeEvent < 0 ? (
+                <span className="text-red-500 ml-2">↓</span>
               ) : (
-                <span className="text-red-500 mx-1">↓</span>
+                <span className="text-gray-400 ml-2">→</span>
               )}
             </h5>
             <p>Current Price: £{(player.nowCost * 10).toFixed(1)}</p>
