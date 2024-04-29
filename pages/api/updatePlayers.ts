@@ -19,58 +19,48 @@ function determineSeverity(chance: number | null): string {
 
 export async function updatePlayers() {
   const data = await fetchFPLData();
-  const playerUpdates = data.elements.map(async (playerData: any) => {
+  for (const playerData of data.elements) {
     const existingPlayer = await prisma.player.findUnique({
       where: { externalId: playerData.id },
     });
 
-    if (existingPlayer) {
-      const newData = {
-        webName: playerData.web_name,
-        nowCost: playerData.now_cost / 10,
-        chanceOfPlayingNextRound: playerData.chance_of_playing_next_round,
-        news: playerData.news,
-        newsAdded: playerData.news_added
-          ? new Date(playerData.news_added)
-          : null,
-      };
+    const newNowCost = playerData.now_cost / 10;
+    const priceChange = playerData.cost_change_event * 0.1; // Adjusted for decimal places in pricing
 
-      const updatedPlayer = await prisma.player.update({
+    if (existingPlayer) {
+      await prisma.player.update({
         where: { externalId: playerData.id },
-        data: newData,
+        data: {
+          webName: playerData.web_name,
+          nowCost: newNowCost,
+          chanceOfPlayingNextRound: playerData.chance_of_playing_next_round,
+          news: playerData.news,
+          newsAdded: playerData.news_added
+            ? new Date(playerData.news_added)
+            : null,
+        },
       });
 
-      // Log price change using cost_change_event
+      // Record price change if there's a change event
+      console.log(
+        "playerData.cost_change_event: " + playerData.cost_change_event
+      );
       if (playerData.cost_change_event !== 0) {
+        console.log("create new priceChange", existingPlayer.webName);
         await prisma.priceChange.create({
           data: {
-            playerId: updatedPlayer.id,
+            playerId: existingPlayer.id,
             changeDate: new Date(),
-            priceChange: playerData.cost_change_event * 0.1, // Convert event to actual price change
-          },
-        });
-      }
-
-      if (existingPlayer.news !== newData.news) {
-        await prisma.injuryUpdate.create({
-          data: {
-            playerId: updatedPlayer.id,
-            updateDate: new Date(),
-            status: newData.news,
-            news: newData.news,
-            severity: determineSeverity(
-              playerData.chance_of_playing_next_round
-            ),
+            priceChange: priceChange,
           },
         });
       }
     } else {
-      // Create new player
       const newPlayer = await prisma.player.create({
         data: {
           externalId: playerData.id,
           webName: playerData.web_name,
-          nowCost: playerData.now_cost / 10,
+          nowCost: newNowCost,
           costChangeStart: playerData.cost_change_start / 10,
           chanceOfPlayingNextRound: playerData.chance_of_playing_next_round,
           news: playerData.news,
@@ -80,18 +70,17 @@ export async function updatePlayers() {
         },
       });
 
-      if (newPlayer.costChangeStart !== 0) {
+      // Handle initial price change for new players if applicable
+      if (playerData.cost_change_start !== 0) {
         await prisma.priceChange.create({
           data: {
             playerId: newPlayer.id,
             changeDate: new Date(),
-            priceChange: newPlayer.costChangeStart,
+            priceChange: playerData.cost_change_start / 10,
           },
         });
       }
     }
-  });
-
-  await Promise.allSettled(playerUpdates);
+  }
   console.log("All players have been updated or created.");
 }
