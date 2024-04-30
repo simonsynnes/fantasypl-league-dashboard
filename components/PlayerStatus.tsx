@@ -54,7 +54,10 @@ const PlayerStatus: React.FC = () => {
           }
         });
 
-        setDateGroups(Object.values(groupedByDate));
+        const sortedDateGroups = Object.keys(groupedByDate)
+          .sort((a, b) => b.localeCompare(a)) // Sort keys in descending order
+          .map((key) => groupedByDate[key]);
+        setDateGroups(sortedDateGroups);
       } catch (error) {
         console.error("Failed to fetch player updates:", error);
       } finally {
