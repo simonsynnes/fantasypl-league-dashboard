@@ -73,4 +73,9 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent font-bold;
+    background-image: linear-gradient(to right, #6ee7b7, #3b82f6);
+  }
 }

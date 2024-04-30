@@ -1,4 +1,6 @@
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 interface Player {
   id: number;
@@ -14,24 +16,41 @@ interface PlayerCardProps {
 }
 
 const PlayerCard: React.FC<PlayerCardProps> = ({ player }) => {
-  const isRiser = player.costChangeEvent > 0;
-  const isFaller = player.costChangeEvent < 0;
+  const hasInjury = Boolean(player.news); // Assuming news contains injury status
 
   return (
     <div
-      className="p-2 border rounded hover:bg-gray-100"
-      style={{ borderColor: player.statusColor }}
+      className="bg-white p-4 mb-2 rounded-lg shadow-lg transition duration-300 ease-in-out hover:shadow-xl"
+      style={{ borderColor: "#CCCCCC" }}
     >
-      <h3 className="font-semibold">{player.webName}</h3>
-      <p>Current Price: £{(player.nowCost * 10).toFixed(1)}</p>
-      <p>
-        Price Change: £{player.costChangeEvent.toFixed(1)}{" "}
-        {isRiser && <span className="text-green-500">↑</span>}
-        {isFaller && <span className="text-red-500">↓</span>}
-      </p>
-      <p style={{ color: player.statusColor }}>
-        Status: {player.news || "No recent updates"}
-      </p>
+      <h3 className="font-semibold text-lg">
+        {player.webName}
+        {player.costChangeEvent > 0 ? (
+          <span className="text-green-500 ml-2">↑</span>
+        ) : player.costChangeEvent < 0 ? (
+          <span className="text-red-500 ml-2">↓</span>
+        ) : (
+          <span className="text-gray-400 ml-2">
+            {" "}
+            <FontAwesomeIcon
+              icon={faExclamationTriangle}
+              className="ml-1"
+              style={{ color: player.statusColor }}
+            />
+          </span>
+        )}
+      </h3>
+      {!hasInjury && (
+        <div>
+          <p className="text-sm">
+            Current Price: £{(player.nowCost * 10).toFixed(1)}
+          </p>
+          <p className="text-sm">
+            Price Change: £{player.costChangeEvent.toFixed(1)}
+          </p>
+        </div>
+      )}
+      {player.news !== null && <p className="text-sm">Status: {player.news}</p>}
     </div>
   );
 };

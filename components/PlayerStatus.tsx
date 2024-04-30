@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-interface Player {
+export interface PlayerUpdate {
   id: number;
   webName: string;
   nowCost: number;
@@ -12,9 +12,8 @@ interface Player {
 
 interface DateGroup {
   date: string;
-  risers: Player[];
-  fallers: Player[];
-  injured: Player[];
+  risers: PlayerUpdate[];
+  fallers: PlayerUpdate[];
 }
 
 const formatDate = (isoDateString: string): string => {
@@ -36,7 +35,7 @@ const PlayerStatus: React.FC = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch player updates");
         }
-        const players: Player[] = await response.json();
+        const players: PlayerUpdate[] = await response.json();
         const groupedByDate: { [key: string]: DateGroup } = {};
 
         players.forEach((player) => {
@@ -46,16 +45,12 @@ const PlayerStatus: React.FC = () => {
               date: dateKey,
               risers: [],
               fallers: [],
-              injured: [],
             };
           }
           if (player.costChangeEvent > 0) {
             groupedByDate[dateKey].risers.push(player);
           } else if (player.costChangeEvent < 0) {
             groupedByDate[dateKey].fallers.push(player);
-          }
-          if (player.news) {
-            groupedByDate[dateKey].injured.push(player);
           }
         });
 
@@ -76,14 +71,13 @@ const PlayerStatus: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl p-4">
-      <h2 className="text-2xl font-bold mb-4">Recent Player Updates</h2>
+      <h2 className="text-2xl font-bold mb-4">Price Changes</h2>
       {dateGroups.map((group) => (
         <div key={group.date} className="mb-8">
-          <h3 className="text-lg font-semibold underline mb-2">{group.date}</h3>
+          <h3 className="text-lg font-semibold mb-2">{group.date}</h3>
           <div className="flex flex-wrap justify-between">
             <Section title="Price Risers" players={group.risers} />
             <Section title="Price Fallers" players={group.fallers} />
-            <Section title="Injured Players" players={group.injured} />
           </div>
         </div>
       ))}
@@ -91,18 +85,14 @@ const PlayerStatus: React.FC = () => {
   );
 };
 
-const Section: React.FC<{ title: string; players: Player[] }> = ({
+const Section: React.FC<{ title: string; players: PlayerUpdate[] }> = ({
   title,
   players,
 }) => {
   return (
-    <div className="w-full lg:w-1/3 p-2">
+    <div className="flex flex-col w-full p-2">
       <h4 className="text-md font-bold mb-2">{title}</h4>
-      <div
-        className={`grid grid-cols-1 ${
-          players.length > 5 ? "md:grid-cols-2" : ""
-        } gap-4`}
-      >
+      <div className="flex flex-col gap-2">
         {players.map((player, index) => (
           <div
             key={player.id}
@@ -120,9 +110,9 @@ const Section: React.FC<{ title: string; players: Player[] }> = ({
             </h5>
             <p>Current Price: £{(player.nowCost * 10).toFixed(1)}</p>
             <p>Price Change: £{player.costChangeEvent.toFixed(1)} </p>
-            <p style={{ color: player.statusColor }}>
-              Status: {player.news || "No recent updates"}
-            </p>
+            {player.news && (
+              <p style={{ color: player.statusColor }}>Status: {player.news}</p>
+            )}
           </div>
         ))}
       </div>
