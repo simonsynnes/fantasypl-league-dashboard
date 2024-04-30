@@ -19,6 +19,7 @@ import {
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Spinner } from "@nextui-org/spinner";
 import PlayerStatus, { PlayerUpdate } from "@/components/PlayerStatus";
 import TestButton from "@/components/TestButton";
 import InjurySection from "@/components/InjurySection";
@@ -165,8 +166,8 @@ const LeagueDashboard: React.FC = () => {
 
   if (!leagueData || leagueData.length === 0) {
     return (
-      <div className="flex justify-center items-center h-screen text-white bg-gray-800">
-        Loading or no data available...
+      <div className="flex justify-center items-center h-screen">
+        <Spinner label="Loading..." color="warning" />
       </div>
     );
   }
