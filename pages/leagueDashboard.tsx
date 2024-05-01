@@ -66,9 +66,19 @@ const LeagueDashboard: React.FC = () => {
   const [teamDetails, setTeamDetails] = useState<Player[] | null>(null);
   const [staticData, setStaticData] = useState<StaticDataResponse | null>(null);
   const [userData, setUserData] = useState<EntryHistory | null>(null);
-  const [userId, setUserId] = useState<string>("");
+  const [userId, setUserId] = useState<string>("581576");
   const [managerName, setManagerName] = useState<string>("");
   const [injuredPlayers, setInjuredPlayers] = useState<PlayerUpdate[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch(`/api/leagues/${userId}`);
+      const data: LeagueData[] = await response.json();
+      setLeagueData(initialPaginatedLeagueData(data));
+    };
+
+    fetchData().catch(console.error);
+  }, [userId]);
 
   // Fetch static data once on component mount
   useEffect(() => {
@@ -80,20 +90,18 @@ const LeagueDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      const fetchData = async () => {
-        try {
-          const response = await fetch(`/api/leagues/${userId}`);
-          const data: ApiResponse = await response.json();
-          setLeagueData(initialPaginatedLeagueData(data.leagues));
-          setManagerName(data.managerName); // Update state with the fetched manager's name
-        } catch (error) {
-          console.error("Failed to fetch leagues data:", error);
-        }
-      };
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/leagues/${userId}`);
+        const data: ApiResponse = await response.json();
+        setLeagueData(initialPaginatedLeagueData(data.leagues));
+        setManagerName(data.managerName); // Update state with the fetched manager's name
+      } catch (error) {
+        console.error("Failed to fetch leagues data:", error);
+      }
+    };
 
-      fetchData();
-    }
+    fetchData();
   }, [userId]);
 
   useEffect(() => {
@@ -156,7 +164,7 @@ const LeagueDashboard: React.FC = () => {
     });
   };
 
-  if ((userId && !leagueData) || (userId && leagueData?.length === 0)) {
+  if (!leagueData || leagueData.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spinner label="Loading..." color="warning" />
@@ -176,104 +184,85 @@ const LeagueDashboard: React.FC = () => {
             {managerName ? `${managerName}'s Leagues` : "Your Leagues"}
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {leagueData && leagueData.length > 0 ? (
-              leagueData.map((league: any, index: number) => (
-                <div
-                  key={index}
-                  className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg mb-4 p-4"
-                >
-                  {/* League Header */}
-                  <div className="bg-gradient-to-r from-light-blue to-dark-blue text-white text-md font-bold px-6 py-3 rounded-t-lg">
-                    <h3 className="text-lg leading-6 font-medium">
-                      {league.league.name}
-                    </h3>
-                  </div>
-                  {/* Teams */}
-                  <div className="border-t border-dark-blue p-2">
-                    {league.standings.results
-                      .slice(
-                        (league.currentPage - 1) * league.itemsPerPage,
-                        league.currentPage * league.itemsPerPage
-                      )
-                      .map((team: any) => (
-                        <motion.div
-                          key={team.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className={`px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 cursor-pointer transition duration-150 ease-in-out rounded-lg shadow-lg ${
-                            team.entry.toString() === userId
-                              ? "bg-gradient-to-r from-cyan-500 to-blue-700 border-l-4 border-blue-800 text-white"
-                              : "bg-off-white"
-                          } hover:bg-light-blue hover:text-white group`} // Updated gradient and border colors for a more vibrant effect
-                          onClick={() => handleTeamClick(team.entry)}
-                        >
-                          <dt className="text-sm font-medium">Team</dt>
-                          <dd className="text-sm sm:col-span-2 flex items-center">
-                            {team.entry_name}
-                            {team.rank < team.last_rank ? (
-                              <FontAwesomeIcon
-                                icon={faArrowUp}
-                                className="ml-2 text-green-500"
-                              />
-                            ) : team.rank > team.last_rank ? (
-                              <FontAwesomeIcon
-                                icon={faArrowDown}
-                                className="ml-2
-                          text-red-500"
-                              />
-                            ) : null}
-                          </dd>
-                          <dt className="text-sm font-medium">Points</dt>
-                          <dd className="text-sm sm:col-span-2">
-                            {team.total}
-                          </dd>
-                        </motion.div>
-                      ))}
-                  </div>
-                  {/* Pagination */}
-                  <div className="flex justify-between p-4">
-                    <button
-                      onClick={() =>
-                        handlePageChange(index, league.currentPage - 1)
-                      }
-                      disabled={league.currentPage === 1}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transform transition duration-150 ease-in-out active:scale-95 disabled:opacity-50"
-                    >
-                      <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />{" "}
-                      Prev
-                    </button>
-                    <button
-                      onClick={() =>
-                        handlePageChange(index, league.currentPage + 1)
-                      }
-                      disabled={
-                        league.currentPage * league.itemsPerPage >=
-                        league.standings.results.length
-                      }
-                      className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform transition duration-150 ease-in-out hover:scale-105"
-                    >
-                      Next{" "}
-                      <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-                    </button>
-                  </div>
+            {leagueData.map((league: any, index: number) => (
+              <div
+                key={index}
+                className="bg-off-white shadow-xl overflow-hidden sm:rounded-lg mb-4 p-4"
+              >
+                {/* League Header */}
+                <div className="bg-gradient-to-r from-light-blue to-dark-blue text-white text-md font-bold px-6 py-3 rounded-t-lg">
+                  <h3 className="text-lg leading-6 font-medium">
+                    {league.league.name}
+                  </h3>
                 </div>
-              ))
-            ) : (
-              <div className="flex justify-center items-center w-full">
-                <div className="bg-white shadow-lg rounded-lg p-6 text-center max-w-md">
-                  <p className="text-gray-800 text-lg font-medium">
-                    Enter your user ID to show leagues. It can be fetched from
-                    <a
-                      href="https://fantasy.premierleague.com/"
-                      className="text-blue-500 hover:text-blue-700 transition duration-300 ease-in-out"
-                    >
-                      fantasy.premierleague.com
-                    </a>
-                  </p>
+                {/* Teams */}
+                <div className="border-t border-dark-blue p-2">
+                  {league.standings.results
+                    .slice(
+                      (league.currentPage - 1) * league.itemsPerPage,
+                      league.currentPage * league.itemsPerPage
+                    )
+                    .map((team: any) => (
+                      <motion.div
+                        key={team.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className={`px-4 py-5 grid grid-cols-3 gap-4 sm:grid-cols-3 cursor-pointer transition duration-150 ease-in-out rounded-lg shadow-lg ${
+                          team.entry.toString() === userId
+                            ? "bg-gradient-to-r from-cyan-500 to-blue-700 border-l-4 border-blue-800 text-white"
+                            : "bg-off-white"
+                        } hover:bg-light-blue hover:text-white group`} // Updated gradient and border colors for a more vibrant effect
+                        onClick={() => handleTeamClick(team.entry)}
+                      >
+                        <dt className="text-sm font-medium">Team</dt>
+                        <dd className="text-sm sm:col-span-2 flex items-center">
+                          {team.entry_name}
+                          {team.rank < team.last_rank ? (
+                            <FontAwesomeIcon
+                              icon={faArrowUp}
+                              className="ml-2 text-green-500"
+                            />
+                          ) : team.rank > team.last_rank ? (
+                            <FontAwesomeIcon
+                              icon={faArrowDown}
+                              className="ml-2
+                          text-red-500"
+                            />
+                          ) : null}
+                        </dd>
+                        <dt className="text-sm font-medium">Points</dt>
+                        <dd className="text-sm sm:col-span-2">{team.total}</dd>
+                      </motion.div>
+                    ))}
+                </div>
+                {/* Pagination */}
+                <div className="flex justify-between p-4">
+                  <button
+                    onClick={() =>
+                      handlePageChange(index, league.currentPage - 1)
+                    }
+                    disabled={league.currentPage === 1}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transform transition duration-150 ease-in-out active:scale-95 disabled:opacity-50"
+                  >
+                    <FontAwesomeIcon icon={faArrowLeft} className="mr-2" /> Prev
+                  </button>
+                  <button
+                    onClick={() =>
+                      handlePageChange(index, league.currentPage + 1)
+                    }
+                    disabled={
+                      league.currentPage * league.itemsPerPage >=
+                      league.standings.results.length
+                    }
+                    className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transform transition duration-150 ease-in-out hover:scale-105"
+                  >
+                    Next{" "}
+                    <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                  </button>
                 </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
 
