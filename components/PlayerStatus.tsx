@@ -54,10 +54,19 @@ const PlayerStatus: React.FC = () => {
           }
         });
 
-        const sortedDateGroups = Object.keys(groupedByDate)
-          .sort((a, b) => b.localeCompare(a)) // Sort keys in descending order
-          .map((key) => groupedByDate[key]);
-        setDateGroups(sortedDateGroups);
+        // Convert object to array and sort by date in descending order
+        const sortedGroups = Object.values(groupedByDate).sort((a, b) => {
+          // Convert date strings back to date objects to compare
+          const dateA = new Date(
+            a.date.split("-").reverse().join("-")
+          ).getTime();
+          const dateB = new Date(
+            b.date.split("-").reverse().join("-")
+          ).getTime();
+          return dateB - dateA; // Sort from newest to oldest
+        });
+
+        setDateGroups(sortedGroups);
       } catch (error) {
         console.error("Failed to fetch player updates:", error);
       } finally {
@@ -112,7 +121,7 @@ const Section: React.FC<{ title: string; players: PlayerUpdate[] }> = ({
               )}
             </h5>
             <p>Current Price: £{(player.nowCost * 10).toFixed(1)}</p>
-            <p>Price Change: £{player.costChangeEvent.toFixed(1)} </p>
+            <p>Price Change: £{player.costChangeEvent.toFixed(1)}</p>
             {player.news && (
               <p style={{ color: player.statusColor }}>Status: {player.news}</p>
             )}
