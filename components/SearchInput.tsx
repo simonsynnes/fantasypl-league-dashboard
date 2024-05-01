@@ -17,7 +17,7 @@ const SearchInput: React.FC<Props> = ({ onSearch }) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex justify-center items-center my-4"
+      className="flex justify-center items-center pt-4 mb-4"
     >
       <input
         type="text"
