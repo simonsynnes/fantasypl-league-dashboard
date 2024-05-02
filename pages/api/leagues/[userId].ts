@@ -39,7 +39,6 @@ export default async function handler(
       );
     }
     const userData = await userResponse.json();
-    console.log("User data received:", userData);
 
     if (!userData.leagues || !userData.leagues.classic) {
       throw new Error("No classic leagues data found in user data.");
